@@ -10,9 +10,8 @@ The same material lives as editable Sanity content on this site's `/faq` page.
 An enterprise team with a large Astro + Svelte monorepo, setting up a Sanity
 preview environment:
 
-1. *"The current `@sanity/astro` requires React for visual editing. You have a
-   SvelteKit integration but it doesn't ship with Astro — so now I have to
-   bundle React into my Astro + Svelte monorepo."*
+1. *"The current `@sanity/astro` requires React for visual editing — so now I
+   have to bundle React into my gigantic Astro + Svelte monorepo."*
 2. *"The integration forces a global `sanityClient` exposed on
    `globalThis.sanityClient`. We already had a central, wrapped Sanity client
    (logging + config options), but the integration forces the global one AND
@@ -46,7 +45,12 @@ Both are legitimate. Both have workarounds implemented in this repo.
   touching `window` at render time can't SSR), not a cause.
 - The underlying `@sanity/visual-editing` package ships a framework-agnostic
   `enableVisualEditing()` entry point **and** a dedicated `./svelte` export
-  (verified in the package's `exports` map).
+  (verified in the package's `exports` map). One trap we found by building:
+  that `./svelte` export (and `@sanity/svelte-loader`) import
+  `$app/navigation`, so they only work inside **SvelteKit** — Svelte the
+  component framework and SvelteKit the meta-framework are different things,
+  and in an Astro project you wrap the framework-agnostic core in your own
+  Svelte component instead (see below).
 
 ### The fix in this repo ([PR #1](https://github.com/shehjad-noqtaai/astro-sanity/pull/1))
 
@@ -61,12 +65,28 @@ Both are legitimate. Both have workarounds implemented in this repo.
 )}
 ```
 
-Svelte shops can instead mount the first-party Svelte component as an island:
+Svelte shops mount a tiny wrapper of their own as an island instead — the
+first-party `@sanity/visual-editing/svelte` component won't build in Astro
+(it imports SvelteKit's `$app/navigation`), but it's only a thin wrapper
+anyway. This is the entire replacement (`src/components/LiveVisualEditing.svelte`,
+the repo's `PUBLIC_VISUAL_EDITING_FLAVOR=svelte` flavor):
+
+```svelte
+<script>
+  import { onMount } from 'svelte'
+  import { enableVisualEditing } from '@sanity/visual-editing'
+
+  onMount(() => enableVisualEditing())
+</script>
+```
 
 ```astro
 <LiveVisualEditing client:only="svelte" />
-<!-- LiveVisualEditing.svelte: import { VisualEditing } from '@sanity/visual-editing/svelte' -->
 ```
+
+For live-as-you-type preview queries without React, use `@sanity/core-loader`
+(the framework-agnostic layer the official loaders wrap — its nanostores
+satisfy the Svelte store contract, so `$store` works natively).
 
 ### The honest caveat
 

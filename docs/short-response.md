@@ -7,7 +7,7 @@
 The `<VisualEditing/>` component is a React island, but it's a thin wrapper. The underlying `@sanity/visual-editing` package is framework-agnostic:
 
 - **Vanilla:** call `enableVisualEditing()` from a plain Astro `<script>` (what this repo does — `src/layouts/Layout.astro`). Browser APIs (`window`, cookies, `postMessage`) work natively in Astro scripts; React was an implementation choice, not a platform requirement (the [official guide](https://www.sanity.io/docs/visual-editing/astro-visual-editing)'s browser-only-APIs line justifies the `client:only` directive, and its `react()` justification is circular — "required because the components are React components").
-- **Svelte:** mount `@sanity/visual-editing/svelte`'s component as a `client:only="svelte"` island.
+- **Svelte:** mount a ~5-line Svelte wrapper around `enableVisualEditing()` as a `client:only="svelte"` island (`src/components/LiveVisualEditing.svelte`). Note: the first-party `@sanity/visual-editing/svelte` export won't build in Astro — it imports SvelteKit's `$app/navigation` (SvelteKit ≠ Svelte); the core function is all you need.
 
 This repo's frontend has **zero React in `package.json`** and full visual editing. Caveat: `react`/`react-dom`/`styled-components` are hard peer deps of `@sanity/visual-editing`, so npm puts React in `node_modules` — but published pages ship zero visual-editing code (verified), and the overlay renderer lazy-loads only during preview sessions.
 
