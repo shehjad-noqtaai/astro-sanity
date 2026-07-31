@@ -11,16 +11,19 @@
     "content:seed": "cd studio && npx sanity dataset import ../content/seed.ndjson production --replace"
   },
   "dependencies": {
+    "@astrojs/svelte": "^9.0.1",
     "@astrojs/vercel": "^11.0.4",
     "@sanity/astro": "^3.5.0",
     "@sanity/client": "^7.26.0",
+    "@sanity/core-loader": "^2.1.2",
     "@sanity/image-url": "^2.1.1",
     "@sanity/preview-url-secret": "^4.1.2",
     "@sanity/visual-editing": "^5.7.3",
     "astro": "^7.1.6",
-    "astro-portabletext": "^0.13.0"
+    "astro-portabletext": "^0.13.0",
+    "svelte": "^5.56.8"
   },
   "devDependencies": {
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   }
 }

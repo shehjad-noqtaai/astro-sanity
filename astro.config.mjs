@@ -1,5 +1,6 @@
 import { defineConfig, envField } from 'astro/config'
 import vercel from '@astrojs/vercel'
+import svelte from '@astrojs/svelte'
 import sanity from '@sanity/astro'
 
 // Single source of client config (see src/lib/sanity.ts, which derives the
@@ -37,5 +38,6 @@ export default defineConfig({
         studioUrl: process.env.PUBLIC_SANITY_STUDIO_URL ?? 'http://localhost:3333',
       },
     }),
+    svelte(),
   ],
 })

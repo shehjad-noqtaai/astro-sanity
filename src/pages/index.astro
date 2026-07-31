@@ -1,5 +1,7 @@
 ---
 import { loggedFetch } from '../lib/sanity'
+import { visualEditingFlavor } from '../lib/flavor'
+import LiveSettingsHeader from '../components/LiveSettingsHeader.svelte'
 import Layout from '../layouts/Layout.astro'
 
 interface PostListItem {
@@ -35,12 +37,23 @@ const [settings, posts] = await Promise.all([
 ])
 
 const siteTitle = settings?.title ?? 'Astro + Sanity preview demo'
+// In preview with the svelte flavor, the header is a svelte-loader live
+// query: it updates as the editor types (comlink), no reload needed.
+const svelteLiveHeader = Astro.locals.preview && visualEditingFlavor === 'svelte'
 ---
 
 <Layout title={siteTitle}>
   <main>
-    <h1>{siteTitle}</h1>
-    {settings?.description && <p class="muted">{settings.description}</p>}
+    {
+      svelteLiveHeader ? (
+        <LiveSettingsHeader client:load initial={{ data: settings }} />
+      ) : (
+        <Fragment>
+          <h1>{siteTitle}</h1>
+          {settings?.description && <p class="muted">{settings.description}</p>}
+        </Fragment>
+      )
+    }
     <ul class="post-list">
       {
         posts.map((post) => (
