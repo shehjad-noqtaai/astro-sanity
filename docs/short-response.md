@@ -13,7 +13,7 @@ This repo's frontend has **zero React in `package.json`** and full visual editin
 
 ## 2. "Forced global client" — upgrade, then invert the wrapping
 
-`globalThis.sanityClient` as the API means you're on **v1.x** — fixed in [**v2.0.0** (2023-09-29)](https://github.com/sanity-io/sanity-astro/releases/tag/v2.0.0), which replaced it with the `sanity:client` virtual module (a server-side `globalThis` shim still exists on latest for back-compat; ignore it). You still can't inject your own client instance (integration config crosses a build-time serialization boundary), so **derive your wrapped client from the integration's** instead of creating a second one:
+`globalThis.sanityClient` as the API means you're on **v1.x** — fixed in [**v2.0.0** (2023-09-29)](https://github.com/sanity-io/sanity-astro/releases/tag/v2.0.0), which replaced it with the `sanity:client` virtual module (a server-side `globalThis` shim still exists on latest for back-compat; ignore it). One part of the complaint is **still true on the latest version**: "the config has to work or it throws" — the shim imports `sanity:client` on every SSR render, executing `createClient(config)` whether you use it or not, so the integration's config must stay valid. And you still can't inject your own client instance (integration config crosses a build-time serialization boundary), so **derive your wrapped client from the integration's** instead of creating a second one:
 
 ```ts
 import { sanityClient } from 'sanity:client'
@@ -29,4 +29,4 @@ An env-flag toggle can't ship (a deployed preview server leaks drafts to everyon
 ## Pointers
 
 - Minimal fix diff: [PR #1](https://github.com/shehjad-noqtaai/astro-sanity/pull/1) · per-request preview: [PR #4](https://github.com/shehjad-noqtaai/astro-sanity/pull/4) · FAQ content: [PR #6](https://github.com/shehjad-noqtaai/astro-sanity/pull/6)
-- Upstream asks: React-free `<VisualEditing/>` path + optional React peer deps; injectable client (module specifier); remove the legacy `globalThis` shim.
+- We can bring to engineering: React-free `<VisualEditing/>` path + optional React peer deps; injectable client (module specifier); remove the legacy `globalThis` shim.

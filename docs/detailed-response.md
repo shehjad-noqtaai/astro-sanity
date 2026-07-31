@@ -92,8 +92,13 @@ contains zero visual-editing code and zero stega.
 - **v3.5.0 (current):** the virtual module is the API, but a back-compat shim
   still injects `globalThis.sanityClient = sanityClient` server-side. It's
   the same client instance (not a second one), server-runtime only (never in
-  the browser bundle), and undocumented — ignore it; removing it is a fair
-  upstream request.
+  the browser bundle), and undocumented — ignore it as an API. It is not
+  purely cosmetic, though: the shim imports `sanity:client` on every SSR
+  render, so `createClient(config)` executes whether you use the client or
+  not — meaning **"the config has to work or it throws" remains true on the
+  latest version**. Upgrading fixes the global-as-API; it does not remove the
+  obligation to keep the integration's config valid. Removing the shim is
+  something we can bring to engineering.
 
 ### How `sanity:client` works (and why you can't inject an instance)
 
@@ -206,7 +211,7 @@ true` (flagged in `enable.ts`).
   `content:seed` make the dataset rebuildable from the repo (stable `_id`s →
   idempotent re-import).
 
-## 5. Upstream feature requests (sanity-io/sanity-astro & visual-editing)
+## 5. Feature requests we can bring to engineering (sanity-io/sanity-astro & visual-editing)
 
 1. **React-free visual editing path in `@sanity/astro`** — ship
    `<VisualEditing/>` as a vanilla script wrapping `enableVisualEditing()`;
