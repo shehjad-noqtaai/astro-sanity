@@ -1,33 +1,57 @@
 ---
-// FIX 2 in practice: every fetch goes through the single wrapped client.
 import { loggedFetch } from '../lib/sanity'
 import Layout from '../layouts/Layout.astro'
 
-interface Post {
+interface PostListItem {
   title: string
-  slug: { current: string }
+  slug: string
+  excerpt?: string
+  publishedAt?: string
 }
 
-let posts: Post[] = []
-let siteTitle = 'Astro + Sanity preview demo'
-
-try {
-  siteTitle =
-    (await loggedFetch<string>(`*[_type == "settings"][0].title`)) ?? siteTitle
-  posts = await loggedFetch<Post[]>(
-    `*[_type == "post" && defined(slug.current)]{title, slug}`
-  )
-} catch {
-  // demo project id — fine to render without content
+interface Settings {
+  title?: string
+  description?: string
 }
+
+const [settings, posts] = await Promise.all([
+  loggedFetch<Settings | null>(`*[_type == "settings"][0]{title, description}`),
+  loggedFetch<PostListItem[]>(
+    `*[_type == "post" && defined(slug.current)] | order(publishedAt desc){
+      title,
+      "slug": slug.current,
+      excerpt,
+      publishedAt
+    }`
+  ),
+])
+
+const siteTitle = settings?.title ?? 'Astro + Sanity preview demo'
 ---
 
 <Layout title={siteTitle}>
   <main>
     <h1>{siteTitle}</h1>
-    <ul>
-      {posts.map((post) => <li>{post.title}</li>)}
-      {posts.length === 0 && <li>No posts (set PUBLIC_SANITY_PROJECT_ID)</li>}
+    {settings?.description && <p class="muted">{settings.description}</p>}
+    <ul class="post-list">
+      {
+        posts.map((post) => (
+          <li>
+            <h2>
+              <a href={`/posts/${post.slug}`}>{post.title}</a>
+            </h2>
+            {post.excerpt && <p>{post.excerpt}</p>}
+            {post.publishedAt && (
+              <p class="muted">
+                {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                  dateStyle: 'long',
+                })}
+              </p>
+            )}
+          </li>
+        ))
+      }
+      {posts.length === 0 && <li>No posts yet — publish some in the Studio.</li>}
     </ul>
   </main>
 </Layout>
