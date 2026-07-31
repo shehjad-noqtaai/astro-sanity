@@ -93,6 +93,24 @@ server mode; the site is deployable as-is without ever exposing drafts.
 > HTTPS, set the preview cookie with `sameSite: 'none', secure: true`
 > (see the comment in `enable.ts`).
 
+## Content backup & seeding
+
+All published content (settings, posts, FAQ questions) is checked in at
+`content/seed.ndjson` — Sanity's native dataset-import format, one document
+per line, published versions only (system fields regenerate on import).
+
+```sh
+npm run content:backup   # re-export the dataset into content/seed.ndjson
+npm run content:seed     # import the seed into the dataset (--replace, idempotent)
+```
+
+Backup reads with the token from `.env`; seeding runs `sanity dataset import`
+from the studio workspace, so it uses your logged-in Sanity CLI session.
+Because documents keep their `_id`s, re-seeding is idempotent — and pointing
+`PUBLIC_SANITY_PROJECT_ID`/`sanity.cli.ts` at a fresh project/dataset rebuilds
+the whole demo from the repo. Re-run `content:backup` after editing content
+in the Studio if you want the repo copy current.
+
 ## Running just the repro (main / fix branches)
 
 ```sh

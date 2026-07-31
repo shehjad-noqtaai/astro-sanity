@@ -1,5 +1,6 @@
 ---
 import { PortableText } from 'astro-portabletext'
+import type { PortableTextProps } from 'astro-portabletext/types'
 import { loggedFetch, urlFor } from '../../lib/sanity'
 import Layout from '../../layouts/Layout.astro'
 
@@ -8,7 +9,7 @@ interface Post {
   excerpt?: string
   publishedAt?: string
   mainImage?: { asset: { _ref: string } }
-  body: unknown[]
+  body: PortableTextProps['value']
 }
 
 const { slug } = Astro.params
