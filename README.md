@@ -3,7 +3,9 @@
 Minimal Astro project reproducing two real-world complaints about the official
 [`@sanity/astro`](https://github.com/sanity-io/sanity-astro) integration, and
 (on the fix branch / PR) the recommended workarounds. See [PRD.md](./PRD.md)
-for full context.
+for full context, [docs/short-response.md](./docs/short-response.md) for the
+one-page verdicts, and [docs/detailed-response.md](./docs/detailed-response.md)
+for the full investigation (also live as editable content at `/faq`).
 
 ## The two problems (this branch — `main`)
 
@@ -92,6 +94,24 @@ server mode; the site is deployable as-is without ever exposing drafts.
 > Production note: when the Studio and site run on different domains over
 > HTTPS, set the preview cookie with `sameSite: 'none', secure: true`
 > (see the comment in `enable.ts`).
+
+## Content backup & seeding
+
+All published content (settings, posts, FAQ questions) is checked in at
+`content/seed.ndjson` — Sanity's native dataset-import format, one document
+per line, published versions only (system fields regenerate on import).
+
+```sh
+npm run content:backup   # re-export the dataset into content/seed.ndjson
+npm run content:seed     # import the seed into the dataset (--replace, idempotent)
+```
+
+Backup reads with the token from `.env`; seeding runs `sanity dataset import`
+from the studio workspace, so it uses your logged-in Sanity CLI session.
+Because documents keep their `_id`s, re-seeding is idempotent — and pointing
+`PUBLIC_SANITY_PROJECT_ID`/`sanity.cli.ts` at a fresh project/dataset rebuilds
+the whole demo from the repo. Re-run `content:backup` after editing content
+in the Studio if you want the repo copy current.
 
 ## Running just the repro (main / fix branches)
 

@@ -42,6 +42,15 @@ export default defineConfig({
               locations: [{ title: 'Home', href: '/' }],
             }),
           },
+          question: {
+            select: { question: 'question', slug: 'slug.current' },
+            resolve: (doc) => ({
+              locations: [
+                { title: doc?.question ?? 'FAQ', href: `/faq#${doc?.slug ?? ''}` },
+                { title: 'FAQ page', href: '/faq' },
+              ],
+            }),
+          },
         },
       },
     }),
