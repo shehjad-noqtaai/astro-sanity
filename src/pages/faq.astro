@@ -1,0 +1,83 @@
+---
+import { PortableText } from 'astro-portabletext'
+import CodeBlock from '../components/CodeBlock.astro'
+import { loggedFetch } from '../lib/sanity'
+import Layout from '../layouts/Layout.astro'
+
+interface Question {
+  question: string
+  slug: string
+  answer: unknown[]
+}
+
+const questions = await loggedFetch<Question[]>(
+  `*[_type == "question" && defined(slug.current)] | order(order asc){
+    question,
+    "slug": slug.current,
+    answer
+  }`,
+  {},
+  Astro.locals.preview
+)
+
+const components = { type: { codeBlock: CodeBlock } }
+---
+
+<Layout title="FAQ — Astro + Sanity, React-free">
+  <main>
+    <h1>FAQ</h1>
+    <p class="muted">
+      Every question asked while building this demo, answered by the code that
+      answers it. Edit these in the Studio — this page is visually editable
+      like everything else.
+    </p>
+    <nav class="faq-toc">
+      <ol>
+        {
+          questions.map((q) => (
+            <li>
+              <a href={`#${q.slug}`}>{q.question}</a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+    {
+      questions.map((q) => (
+        <section id={q.slug} class="faq-entry">
+          <h2>{q.question}</h2>
+          <PortableText value={q.answer} components={components} />
+        </section>
+      ))
+    }
+    {questions.length === 0 && <p>No questions yet — add some in the Studio.</p>}
+  </main>
+</Layout>
+
+<style>
+  .faq-toc {
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 1.5rem 0 2.5rem;
+    background: #fffdf9;
+  }
+  .faq-toc ol {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+  .faq-toc li {
+    padding: 0.15rem 0;
+  }
+  .faq-entry {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .faq-entry h2 {
+    margin-top: 0;
+    font-size: 1.35rem;
+  }
+</style>

@@ -1,0 +1,50 @@
+---
+// Custom Portable Text renderer for the `codeBlock` type (astro-portabletext
+// passes the PT node as a prop). No framework, no highlighter — just <pre>.
+interface CodeBlockNode {
+  _type: 'codeBlock'
+  code: string
+  language?: string
+  filename?: string
+}
+
+interface Props {
+  node: CodeBlockNode
+}
+
+const { node } = Astro.props
+---
+
+<figure class="code-block">
+  {node.filename && <figcaption>{node.filename}</figcaption>}
+  <pre data-language={node.language}><code>{node.code}</code></pre>
+</figure>
+
+<style>
+  .code-block {
+    margin: 1.25rem 0;
+  }
+  .code-block figcaption {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: #efece7;
+    border: 1px solid var(--rule);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: 0.35rem 0.75rem;
+  }
+  .code-block pre {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    background: #1e1e1e;
+    color: #e8e8e8;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  .code-block figcaption + pre {
+    border-radius: 0 0 6px 6px;
+  }
+</style>
