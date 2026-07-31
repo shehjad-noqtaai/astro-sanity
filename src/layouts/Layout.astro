@@ -1,8 +1,13 @@
 ---
 // Visual editing without React: enableVisualEditing() from
-// @sanity/visual-editing is framework-agnostic. The script is injected per
-// request — only for visitors whose preview cookie passed secret validation
-// (see src/middleware.ts) — so end users never receive visual-editing code.
+// @sanity/visual-editing is framework-agnostic. Injected per request — only
+// for visitors whose preview cookie passed secret validation (see
+// src/middleware.ts) — so end users never receive visual-editing code.
+// PUBLIC_VISUAL_EDITING_FLAVOR picks the wiring: 'vanilla' (plain script,
+// reload-driven) or 'svelte' (Svelte islands + svelte-loader live queries).
+import LiveVisualEditing from '../components/LiveVisualEditing.svelte'
+import { visualEditingFlavor } from '../lib/flavor'
+
 interface Props {
   title: string
 }
@@ -32,7 +37,7 @@ const preview = Astro.locals.preview
     </header>
     <slot />
     {
-      preview && (
+      preview && visualEditingFlavor === 'vanilla' && (
         <script>
           import { enableVisualEditing } from '@sanity/visual-editing'
           enableVisualEditing({
@@ -51,6 +56,7 @@ const preview = Astro.locals.preview
         </script>
       )
     }
+    {preview && visualEditingFlavor === 'svelte' && <LiveVisualEditing client:only="svelte" />}
   </body>
 </html>
 

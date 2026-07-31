@@ -95,6 +95,26 @@ server mode; the site is deployable as-is without ever exposing drafts.
 > HTTPS, set the preview cookie with `sameSite: 'none', secure: true`
 > (see the comment in `enable.ts`).
 
+## Preview update latency — two flavors
+
+`PUBLIC_VISUAL_EDITING_FLAVOR` (build-time) picks how preview updates arrive:
+
+- **`vanilla`** (default) — plain `<script>` + `enableVisualEditing()`;
+  edits arrive by reload (the `refresh` handler). Zero framework code.
+- **`svelte`** — Svelte islands: `LiveVisualEditing.svelte` wraps
+  `enableVisualEditing()` (the first-party `@sanity/visual-editing/svelte`
+  component is SvelteKit-only — it imports `$app/navigation`), and
+  `LiveSettingsHeader.svelte` runs a live query via **`@sanity/core-loader`**
+  (the framework-agnostic layer the official loaders wrap; its nanostores
+  satisfy the Svelte store contract). Inside Presentation, the home header
+  updates **as the editor types** — comlink streams results including
+  uncommitted edits, no reload.
+
+The latency ladder, worst → best: full reload → `client.listen()` re-fetch →
+loaders over comlink (the `svelte` flavor) → React-only `useOptimistic`
+(instant pre-commit patching; in practice mainly the drag-reorder UX).
+Published visitors are unaffected by the flavor — zero preview code either way.
+
 ## Deploying
 
 The adapter is **Vercel** (`@astrojs/vercel`): connect the repo, set
