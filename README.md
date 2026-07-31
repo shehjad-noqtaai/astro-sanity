@@ -83,6 +83,12 @@ document "locations" banner links each post to its page and the home page.
 To see the published-visitor experience (no overlays, CDN, published-only,
 zero visual-editing code in the HTML), run plain `npm run dev`.
 
+> **Astro 7 gotcha:** `astro dev` runs as a persistent daemon — starting the
+> other mode while a server is up silently reuses the running one, so the
+> preview flag never applies and Presentation shows "Unable to connect to
+> visual editing". Both npm scripts run `astro dev stop` first to guarantee a
+> fresh server in the right mode.
+
 ## Running just the repro (main / fix branches)
 
 ```sh
