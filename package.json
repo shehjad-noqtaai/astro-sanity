@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "astro dev stop >/dev/null 2>&1; astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "content:backup": "node --env-file=.env scripts/backup-content.mjs",
+    "content:seed": "cd studio && npx sanity dataset import ../content/seed.ndjson production --replace"
   },
   "dependencies": {
     "@astrojs/node": "^11.0.3",
