@@ -11,7 +11,7 @@
     "content:seed": "cd studio && npx sanity dataset import ../content/seed.ndjson production --replace"
   },
   "dependencies": {
-    "@astrojs/node": "^11.0.3",
+    "@astrojs/vercel": "^11.0.4",
     "@sanity/astro": "^3.5.0",
     "@sanity/client": "^7.26.0",
     "@sanity/image-url": "^2.1.1",
