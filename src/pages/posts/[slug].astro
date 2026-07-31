@@ -21,7 +21,8 @@ const post = await loggedFetch<Post | null>(
     mainImage,
     body
   }`,
-  { slug: slug ?? '' }
+  { slug: slug ?? '' },
+  Astro.locals.preview
 )
 
 if (!post) {

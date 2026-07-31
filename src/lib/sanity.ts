@@ -3,50 +3,61 @@ import imageUrlBuilder from '@sanity/image-url'
 import type { QueryParams } from '@sanity/client'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
-// The single wrapped client, derived from the integration-owned one
-// (sanity:client) via withConfig() — astro.config.mjs stays the only source
-// of projectId/dataset config. Page code imports only from this module.
-//
-// In preview mode (PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true) the client
-// switches to the drafts perspective with stega encoding so the Presentation
-// tool gets click-to-edit overlays and live draft content. Outside preview it
-// serves published content from the CDN with no stega.
-export const visualEditingEnabled =
-  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === 'true'
+// Both clients derive from the integration-owned one (sanity:client) via
+// withConfig() — astro.config.mjs stays the only source of projectId/dataset
+// config. Preview is decided PER REQUEST (see src/middleware.ts): editors
+// arriving through the Studio's Presentation tool carry a cookie set by
+// /api/preview/enable after @sanity/preview-url-secret validation; everyone
+// else gets published content from the CDN with no stega.
+import { createHmac } from 'node:crypto'
 
 const token = import.meta.env.SANITY_API_READ_TOKEN
 
-if (visualEditingEnabled && !token) {
-  throw new Error(
-    'PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true requires SANITY_API_READ_TOKEN (drafts perspective needs an authenticated client)'
-  )
+export const previewConfigured = Boolean(token)
+export const PREVIEW_COOKIE = 'sanity-preview'
+
+// The cookie value is an HMAC keyed by the server-only token, so a visitor
+// can't forge preview mode by hand-setting `sanity-preview=true`. Only
+// /api/preview/enable (after preview-url-secret validation) knows this value.
+export const previewCookieValue = previewConfigured
+  ? createHmac('sha256', token).update(PREVIEW_COOKIE).digest('hex')
+  : ''
+
+const studioUrl =
+  import.meta.env.PUBLIC_SANITY_STUDIO_URL ?? 'http://localhost:3333'
+
+export const publishedClient = sanityClient.withConfig({
+  useCdn: true,
+  perspective: 'published',
+})
+
+export const previewClient = sanityClient.withConfig({
+  token,
+  useCdn: false,
+  perspective: 'drafts',
+  stega: { enabled: true, studioUrl },
+})
+
+export function getClient(preview: boolean) {
+  return preview && previewConfigured ? previewClient : publishedClient
 }
 
-export const client = sanityClient.withConfig(
-  visualEditingEnabled
-    ? {
-        token,
-        useCdn: false,
-        perspective: 'drafts',
-        stega: {
-          enabled: true,
-          studioUrl:
-            import.meta.env.PUBLIC_SANITY_STUDIO_URL ?? 'http://localhost:3333',
-        },
-      }
-    : { useCdn: true, perspective: 'published' }
-)
-
-export async function loggedFetch<T>(query: string, params?: QueryParams): Promise<T> {
+export async function loggedFetch<T>(
+  query: string,
+  params?: QueryParams,
+  preview = false
+): Promise<T> {
   const start = performance.now()
   try {
-    return await client.fetch<T>(query, params)
+    return await getClient(preview).fetch<T>(query, params)
   } finally {
-    console.log(`[sanity] query took ${Math.round(performance.now() - start)}ms`)
+    console.log(
+      `[sanity] ${preview ? 'preview' : 'published'} query took ${Math.round(performance.now() - start)}ms`
+    )
   }
 }
 
-const builder = imageUrlBuilder(client)
+const builder = imageUrlBuilder(publishedClient)
 
 export function urlFor(source: SanityImageSource) {
   return builder.image(source)

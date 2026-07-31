@@ -14,15 +14,23 @@ interface Settings {
   description?: string
 }
 
+const { preview } = Astro.locals
+
 const [settings, posts] = await Promise.all([
-  loggedFetch<Settings | null>(`*[_type == "settings"][0]{title, description}`),
+  loggedFetch<Settings | null>(
+    `*[_type == "settings"][0]{title, description}`,
+    {},
+    preview
+  ),
   loggedFetch<PostListItem[]>(
     `*[_type == "post" && defined(slug.current)] | order(publishedAt desc){
       title,
       "slug": slug.current,
       excerpt,
       publishedAt
-    }`
+    }`,
+    {},
+    preview
   ),
 ])
 
