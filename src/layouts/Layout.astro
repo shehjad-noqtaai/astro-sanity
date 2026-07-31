@@ -1,9 +1,9 @@
 ---
-// PROBLEM 1: <VisualEditing/> from @sanity/astro is a React component under
-// the hood. Rendering it requires @astrojs/react + react + react-dom in a
-// codebase that otherwise ships zero React.
-import { VisualEditing } from '@sanity/astro/visual-editing'
-
+// FIX 1: visual editing without React. @sanity/visual-editing ships a
+// framework-agnostic enableVisualEditing() — the React <VisualEditing/>
+// component in @sanity/astro is just a thin wrapper around it. The script
+// below is only injected when the preview flag is on, so published pages
+// carry no visual-editing code at all.
 interface Props {
   title: string
 }
@@ -22,6 +22,13 @@ const visualEditingEnabled =
   </head>
   <body>
     <slot />
-    <VisualEditing enabled={visualEditingEnabled} zIndex={1000} />
+    {
+      visualEditingEnabled && (
+        <script>
+          import { enableVisualEditing } from '@sanity/visual-editing'
+          enableVisualEditing()
+        </script>
+      )
+    }
   </body>
 </html>

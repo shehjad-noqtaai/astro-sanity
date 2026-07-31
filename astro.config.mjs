@@ -1,15 +1,13 @@
 import { defineConfig } from 'astro/config'
 import sanity from '@sanity/astro'
-import react from '@astrojs/react'
 
-// PROBLEM 1: visual editing via @sanity/astro's <VisualEditing/> is a React
-// component under the hood, so the React integration must be installed and
-// registered even though nothing else in this Astro (+ Svelte) codebase uses React.
+// FIX 2: this is now the SINGLE source of client config. The integration's
+// client (the `sanity:client` virtual module) is derived from it, and our
+// wrapped client (src/lib/sanity.ts) is derived from `sanity:client` via
+// withConfig() — one client lineage, no duplicated config.
 //
-// PROBLEM 2: the integration builds its own SanityClient from this config and
-// exposes it as the `sanity:client` virtual module (older versions:
-// globalThis.sanityClient). There is no way to hand it our own wrapped client
-// instance, so this config must be valid AND kept in sync with src/lib/custom-client.ts.
+// FIX 1: no react() integration — visual editing is wired with the
+// framework-agnostic enableVisualEditing() in src/layouts/Layout.astro.
 export default defineConfig({
   integrations: [
     sanity({
@@ -21,6 +19,5 @@ export default defineConfig({
         studioUrl: process.env.PUBLIC_SANITY_STUDIO_URL ?? 'http://localhost:3333',
       },
     }),
-    react(),
   ],
 })

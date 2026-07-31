@@ -9,16 +9,12 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^4.2.0",
     "@sanity/astro": "^3.2.0",
     "@sanity/client": "^7.0.0",
-    "astro": "^5.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@sanity/visual-editing": "^5.7.3",
+    "astro": "^5.0.0"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
     "typescript": "^5.6.0"
   }
 }
