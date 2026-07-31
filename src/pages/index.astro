@@ -1,0 +1,39 @@
+---
+// PROBLEM 2 in practice: two clients in one page.
+// Some code uses the integration's client (sanity:client)...
+import { sanityClient } from 'sanity:client'
+// ...while other code uses our central wrapped client. Same config, duplicated.
+import { loggedFetch } from '../lib/custom-client'
+import Layout from '../layouts/Layout.astro'
+
+interface Post {
+  title: string
+  slug: { current: string }
+}
+
+let posts: Post[] = []
+let siteTitle = 'Astro + Sanity preview demo'
+
+try {
+  // fetched with the integration-owned client
+  siteTitle =
+    (await sanityClient.fetch<string>(`*[_type == "settings"][0].title`)) ??
+    siteTitle
+  // fetched with our wrapped client
+  posts = await loggedFetch<Post[]>(
+    `*[_type == "post" && defined(slug.current)]{title, slug}`
+  )
+} catch {
+  // demo project id — fine to render without content
+}
+---
+
+<Layout title={siteTitle}>
+  <main>
+    <h1>{siteTitle}</h1>
+    <ul>
+      {posts.map((post) => <li>{post.title}</li>)}
+      {posts.length === 0 && <li>No posts (set PUBLIC_SANITY_PROJECT_ID)</li>}
+    </ul>
+  </main>
+</Layout>
