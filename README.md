@@ -3,7 +3,9 @@
 Minimal Astro project reproducing two real-world complaints about the official
 [`@sanity/astro`](https://github.com/sanity-io/sanity-astro) integration, and
 (on the fix branch / PR) the recommended workarounds. See [PRD.md](./PRD.md)
-for full context.
+for full context, [docs/short-response.md](./docs/short-response.md) for the
+one-page verdicts, and [docs/detailed-response.md](./docs/detailed-response.md)
+for the full investigation (also live as editable content at `/faq`).
 
 ## The two problems (this branch — `main`)
 
