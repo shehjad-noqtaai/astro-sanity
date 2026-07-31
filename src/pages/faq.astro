@@ -1,5 +1,6 @@
 ---
 import { PortableText } from 'astro-portabletext'
+import type { PortableTextProps } from 'astro-portabletext/types'
 import CodeBlock from '../components/CodeBlock.astro'
 import { loggedFetch } from '../lib/sanity'
 import Layout from '../layouts/Layout.astro'
@@ -7,7 +8,7 @@ import Layout from '../layouts/Layout.astro'
 interface Question {
   question: string
   slug: string
-  answer: unknown[]
+  answer: PortableTextProps['value']
 }
 
 const questions = await loggedFetch<Question[]>(
