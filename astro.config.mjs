@@ -1,5 +1,5 @@
-import { defineConfig } from 'astro/config'
-import node from '@astrojs/node'
+import { defineConfig, envField } from 'astro/config'
+import vercel from '@astrojs/vercel'
 import sanity from '@sanity/astro'
 
 // Single source of client config (see src/lib/sanity.ts, which derives the
@@ -8,10 +8,25 @@ import sanity from '@sanity/astro'
 // enableVisualEditing() in src/layouts/Layout.astro.
 //
 // output: 'server' so every request renders fresh content — required for the
-// Presentation tool to reflect draft edits live.
+// per-request preview mode.
+//
+// Adapter: Vercel. For a container platform (ECS, Cloud Run, GKE), swap to
+// @astrojs/node ({ mode: 'standalone' }) — no other changes needed.
 export default defineConfig({
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  adapter: vercel(),
+  env: {
+    schema: {
+      // Server secret read at RUNTIME (not inlined at build), so platforms
+      // that inject secrets into the running environment (Vercel, k8s,
+      // Cloud Run) work even when the build happens without the token.
+      SANITY_API_READ_TOKEN: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+    },
+  },
   integrations: [
     sanity({
       projectId: process.env.PUBLIC_SANITY_PROJECT_ID ?? 'im07utyl',

@@ -4,7 +4,8 @@ import {
   PREVIEW_COOKIE,
   previewClient,
   previewConfigured,
-  previewCookieValue,
+  previewCookieOptions,
+  getPreviewCookieValue,
 } from '../../../lib/sanity'
 
 // The Studio's Presentation tool opens the iframe through this route with a
@@ -27,13 +28,7 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
     return new Response('Invalid preview secret', { status: 401 })
   }
 
-  cookies.set(PREVIEW_COOKIE, previewCookieValue, {
-    path: '/',
-    httpOnly: true,
-    sameSite: 'lax',
-    // In production (Studio and site on different domains, HTTPS) switch to:
-    // sameSite: 'none', secure: true
-  })
+  cookies.set(PREVIEW_COOKIE, await getPreviewCookieValue(), previewCookieOptions)
 
   return redirect(redirectTo, 307)
 }

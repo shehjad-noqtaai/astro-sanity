@@ -95,6 +95,31 @@ server mode; the site is deployable as-is without ever exposing drafts.
 > HTTPS, set the preview cookie with `sameSite: 'none', secure: true`
 > (see the comment in `enable.ts`).
 
+## Deploying
+
+The adapter is **Vercel** (`@astrojs/vercel`): connect the repo, set
+`PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`,
+`PUBLIC_SANITY_STUDIO_URL` (the deployed Studio URL) and
+`SANITY_API_READ_TOKEN` in the project settings, and deploy. Portability
+properties baked into the code:
+
+- **Runtime secrets** — the token is declared via `astro:env`
+  (`context: 'server', access: 'secret'`), so it's read from the running
+  environment, not inlined at build. Builds without the token still work.
+- **Web Crypto HMAC** — the preview cookie signature uses `crypto.subtle`,
+  which runs identically on Node, Vercel, and edge/Workers runtimes
+  (no `node:crypto` dependency).
+- **Env-driven cookie flags** — `SameSite=None; Secure` in production
+  (cross-origin Studio iframe), `Lax` on localhost.
+
+For a container platform (ECS, Cloud Run, GKE) swap the adapter to
+`@astrojs/node` (`{ mode: 'standalone' }`) — one line in `astro.config.mjs`.
+After deploying: add the production domain to the Sanity project's CORS
+origins, point the Studio's `presentationTool` `previewUrl.origin` at the
+deployed site, and don't edge-cache SSR HTML without varying on the
+`sanity-preview` cookie. (`npm run preview` doesn't apply to the Vercel
+adapter — use `vercel dev` or plain `npm run dev` locally.)
+
 ## Content backup & seeding
 
 All published content (settings, posts, FAQ questions) is checked in at
