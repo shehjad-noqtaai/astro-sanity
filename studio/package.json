@@ -1,0 +1,19 @@
+{
+  "name": "astro-sanity-demo-studio",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sanity": "^4.0.0",
+    "styled-components": "^6.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

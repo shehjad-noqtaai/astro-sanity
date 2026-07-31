@@ -1,0 +1,56 @@
+---
+import { PortableText } from 'astro-portabletext'
+import { loggedFetch, urlFor } from '../../lib/sanity'
+import Layout from '../../layouts/Layout.astro'
+
+interface Post {
+  title: string
+  excerpt?: string
+  publishedAt?: string
+  mainImage?: { asset: { _ref: string } }
+  body: unknown[]
+}
+
+const { slug } = Astro.params
+
+const post = await loggedFetch<Post | null>(
+  `*[_type == "post" && slug.current == $slug][0]{
+    title,
+    excerpt,
+    publishedAt,
+    mainImage,
+    body
+  }`,
+  { slug: slug ?? '' }
+)
+
+if (!post) {
+  return new Response(null, { status: 404, statusText: 'Not found' })
+}
+---
+
+<Layout title={post.title}>
+  <article>
+    <h1>{post.title}</h1>
+    {
+      post.publishedAt && (
+        <p class="muted">
+          {new Date(post.publishedAt).toLocaleDateString('en-US', {
+            dateStyle: 'long',
+          })}
+        </p>
+      )
+    }
+    {
+      post.mainImage?.asset && (
+        <img
+          src={urlFor(post.mainImage).width(1200).height(630).fit('crop').url()}
+          alt={post.title}
+          width="1200"
+          height="630"
+        />
+      )
+    }
+    <PortableText value={post.body} />
+  </article>
+</Layout>
