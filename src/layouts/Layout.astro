@@ -1,16 +1,15 @@
 ---
-// FIX 1: visual editing without React. @sanity/visual-editing ships a
-// framework-agnostic enableVisualEditing() — the React <VisualEditing/>
-// component in @sanity/astro is just a thin wrapper around it. The script
-// below is only injected when the preview flag is on, so published pages
-// carry no visual-editing code at all.
+// Visual editing without React: enableVisualEditing() from
+// @sanity/visual-editing is framework-agnostic. The script is only injected
+// when the preview flag is on, so published pages carry no visual-editing
+// code at all.
+import { visualEditingEnabled } from '../lib/sanity'
+
 interface Props {
   title: string
 }
 
 const { title } = Astro.props
-const visualEditingEnabled =
-  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === 'true'
 ---
 
 <!doctype html>
@@ -21,14 +20,100 @@ const visualEditingEnabled =
     <title>{title}</title>
   </head>
   <body>
+    <header>
+      <nav><a href="/">← All posts</a></nav>
+    </header>
     <slot />
     {
       visualEditingEnabled && (
         <script>
           import { enableVisualEditing } from '@sanity/visual-editing'
-          enableVisualEditing()
+          enableVisualEditing({
+            // Presentation drives refreshes via postMessage when it can; this
+            // fallback hard-reloads for manual browser visits in preview mode.
+            refresh: (payload) => {
+              if (payload.source === 'mutation') {
+                return new Promise((resolve) => {
+                  window.location.reload()
+                  resolve()
+                })
+              }
+              return false
+            },
+          })
         </script>
       )
     }
   </body>
 </html>
+
+<style is:global>
+  :root {
+    color-scheme: light;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #f03e2f;
+    --rule: #e8e4de;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0 auto;
+    max-width: 42rem;
+    padding: 2rem 1.25rem 6rem;
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.6;
+    color: var(--ink);
+    background: #faf8f5;
+  }
+  header nav {
+    font-family: system-ui, sans-serif;
+    font-size: 0.85rem;
+    margin-bottom: 3rem;
+  }
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  h1 {
+    font-size: 2.4rem;
+    line-height: 1.15;
+    margin: 0 0 0.5rem;
+  }
+  h2 {
+    margin-top: 2.5rem;
+  }
+  .muted {
+    color: var(--muted);
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+  }
+  .post-list {
+    list-style: none;
+    padding: 0;
+  }
+  .post-list li {
+    border-bottom: 1px solid var(--rule);
+    padding: 1.5rem 0;
+  }
+  .post-list h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.4rem;
+  }
+  article img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    margin-left: 0;
+    padding-left: 1.25rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>

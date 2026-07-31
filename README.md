@@ -47,11 +47,52 @@ dependencies of `@sanity/visual-editing`, so npm still places React in
 `node_modules` — but none of it ships in the production bundle (the overlay
 renderer is lazy-loaded only during preview sessions).
 
-## Running
+## Full demo (branch `feat/full-demo`) — test the whole experience
+
+This branch is backed by a **real Sanity project** (`im07utyl`, org `shehjad`,
+dataset `production`) with seeded content, a Studio with the Presentation
+tool, and a server-rendered frontend (posts list, post detail with Portable
+Text and images). The Astro app stays React-free; the Studio is a separate
+workspace in `studio/` (the Studio itself is a React app, but none of it
+touches the frontend's dependency tree).
+
+### 1. One-time setup
 
 ```sh
 npm install
-cp .env.example .env   # optional — builds fine with the placeholder project id
+(cd studio && npm install)
+cp .env.example .env
+# then paste a Viewer token into SANITY_API_READ_TOKEN in .env
+# (create at https://sanity.io/manage/project/im07utyl/api)
+```
+
+### 2. Run both apps
+
+```sh
+npm run dev:preview        # Astro on :4321 with visual editing + drafts perspective
+(cd studio && npm run dev) # Studio on :3333
+```
+
+### 3. Test visual editing
+
+Open http://localhost:3333, log in, and switch to the **Presentation** tab.
+The site loads in the iframe with click-to-edit overlays (stega-driven).
+Edit a post title or body — the preview updates with draft content. The
+document "locations" banner links each post to its page and the home page.
+
+To see the published-visitor experience (no overlays, CDN, published-only,
+zero visual-editing code in the HTML), run plain `npm run dev`.
+
+> **Astro 7 gotcha:** `astro dev` runs as a persistent daemon — starting the
+> other mode while a server is up silently reuses the running one, so the
+> preview flag never applies and Presentation shows "Unable to connect to
+> visual editing". Both npm scripts run `astro dev stop` first to guarantee a
+> fresh server in the right mode.
+
+## Running just the repro (main / fix branches)
+
+```sh
+npm install
 npm run build
 npm run dev
 ```
