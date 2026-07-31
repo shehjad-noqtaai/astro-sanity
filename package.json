@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev stop >/dev/null 2>&1; astro dev",
-    "dev:preview": "astro dev stop >/dev/null 2>&1; PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true astro dev",
     "build": "astro build",
     "preview": "astro preview"
   },
@@ -14,6 +13,7 @@
     "@sanity/astro": "^3.5.0",
     "@sanity/client": "^7.26.0",
     "@sanity/image-url": "^2.1.1",
+    "@sanity/preview-url-secret": "^4.1.2",
     "@sanity/visual-editing": "^5.7.3",
     "astro": "^7.1.6",
     "astro-portabletext": "^0.13.0"

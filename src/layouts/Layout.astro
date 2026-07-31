@@ -1,15 +1,14 @@
 ---
 // Visual editing without React: enableVisualEditing() from
-// @sanity/visual-editing is framework-agnostic. The script is only injected
-// when the preview flag is on, so published pages carry no visual-editing
-// code at all.
-import { visualEditingEnabled } from '../lib/sanity'
-
+// @sanity/visual-editing is framework-agnostic. The script is injected per
+// request — only for visitors whose preview cookie passed secret validation
+// (see src/middleware.ts) — so end users never receive visual-editing code.
 interface Props {
   title: string
 }
 
 const { title } = Astro.props
+const preview = Astro.locals.preview
 ---
 
 <!doctype html>
@@ -20,12 +19,20 @@ const { title } = Astro.props
     <title>{title}</title>
   </head>
   <body>
+    {
+      preview && (
+        <div class="preview-banner">
+          Preview mode — you are seeing draft content.
+          <a href="/api/preview/disable">Exit preview</a>
+        </div>
+      )
+    }
     <header>
       <nav><a href="/">← All posts</a></nav>
     </header>
     <slot />
     {
-      visualEditingEnabled && (
+      preview && (
         <script>
           import { enableVisualEditing } from '@sanity/visual-editing'
           enableVisualEditing({
@@ -66,6 +73,19 @@ const { title } = Astro.props
     line-height: 1.6;
     color: var(--ink);
     background: #faf8f5;
+  }
+  .preview-banner {
+    font-family: system-ui, sans-serif;
+    font-size: 0.85rem;
+    background: #fff3cd;
+    border: 1px solid #e6d9a8;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .preview-banner a {
+    margin-left: 0.5rem;
+    font-weight: 600;
   }
   header nav {
     font-family: system-ui, sans-serif;

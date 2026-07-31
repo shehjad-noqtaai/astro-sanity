@@ -16,9 +16,15 @@ export default defineConfig({
   plugins: [
     structureTool(),
     presentationTool({
-      // The Astro app must run with PUBLIC_SANITY_VISUAL_EDITING_ENABLED=true
-      // (npm run dev:preview) for overlays + draft content to appear here.
-      previewUrl: previewOrigin,
+      // Preview is enabled per request: Presentation opens the iframe through
+      // /api/preview/enable with a signed secret; the Astro app validates it
+      // and sets a preview cookie. Plain `npm run dev` serves both audiences.
+      previewUrl: {
+        origin: previewOrigin,
+        previewMode: {
+          enable: '/api/preview/enable',
+        },
+      },
       resolve: {
         locations: {
           post: {

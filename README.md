@@ -69,25 +69,29 @@ cp .env.example .env
 ### 2. Run both apps
 
 ```sh
-npm run dev:preview        # Astro on :4321 with visual editing + drafts perspective
+npm run dev                # Astro on :4321 — one server for BOTH audiences
 (cd studio && npm run dev) # Studio on :3333
 ```
 
 ### 3. Test visual editing
 
 Open http://localhost:3333, log in, and switch to the **Presentation** tab.
-The site loads in the iframe with click-to-edit overlays (stega-driven).
-Edit a post title or body — the preview updates with draft content. The
-document "locations" banner links each post to its page and the home page.
+Preview mode is decided **per request**: Presentation opens the iframe
+through `/api/preview/enable` with a signed secret
+(`@sanity/preview-url-secret`); the Astro app validates it server-side and
+sets an unforgeable (HMAC) preview cookie. That visitor gets drafts + stega +
+click-to-edit overlays and a "Preview mode" banner with an exit link
+(`/api/preview/disable`). Everyone else — same server, same URL — gets
+published CDN content with zero visual-editing code in the HTML.
 
-To see the published-visitor experience (no overlays, CDN, published-only,
-zero visual-editing code in the HTML), run plain `npm run dev`.
+This mirrors `next-sanity`'s draft mode, hand-rolled for Astro in ~80 lines:
+`src/middleware.ts`, `src/pages/api/preview/{enable,disable}.ts`, and a
+per-request client switch in `src/lib/sanity.ts`. No env flag, no second
+server mode; the site is deployable as-is without ever exposing drafts.
 
-> **Astro 7 gotcha:** `astro dev` runs as a persistent daemon — starting the
-> other mode while a server is up silently reuses the running one, so the
-> preview flag never applies and Presentation shows "Unable to connect to
-> visual editing". Both npm scripts run `astro dev stop` first to guarantee a
-> fresh server in the right mode.
+> Production note: when the Studio and site run on different domains over
+> HTTPS, set the preview cookie with `sameSite: 'none', secure: true`
+> (see the comment in `enable.ts`).
 
 ## Running just the repro (main / fix branches)
 
