@@ -6,9 +6,13 @@
   // function, so Svelte handles cleanup on unmount.
   import { onMount } from 'svelte'
   import { enableVisualEditing } from '@sanity/visual-editing'
+  import { createMpaHistoryAdapter } from '../lib/preview-history'
 
   onMount(() =>
     enableVisualEditing({
+      // Keeps Presentation's URL bar in sync as the editor clicks around,
+      // and lets Presentation navigate the iframe.
+      history: createMpaHistoryAdapter(),
       refresh: (payload) => {
         if (payload.source === 'mutation') {
           return new Promise(() => window.location.reload())
