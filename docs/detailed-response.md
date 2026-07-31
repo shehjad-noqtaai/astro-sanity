@@ -27,13 +27,23 @@ Both are legitimate. Both have workarounds implemented in this repo.
 ### What's actually true
 
 - The `<VisualEditing/>` component in `@sanity/astro` **is** React under the
-  hood, and the docs require `@astrojs/react`. The docs justify it with
-  "these components use browser-only APIs (`window`, `document.cookie`,
-  `postMessage`)" — but that conflates *needing browser APIs* with *needing
-  React*. A plain Astro `<script>` is bundled by Vite and runs in the browser
-  with full access to all of those. The `client:only="react"` in the docs is
-  a *consequence* of choosing React (a component touching `window` at render
-  time can't SSR), not a cause.
+  hood, and the docs require `@astrojs/react`. The official
+  [Visual Editing with Astro](https://www.sanity.io/docs/visual-editing/astro-visual-editing)
+  guide says, verbatim: *"The `client:only="react"` directive is critical. It
+  tells Astro to render these components exclusively on the client side using
+  React, with no server-side rendering attempt. This is necessary because
+  both components use browser-only APIs (`window`, `document.cookie`,
+  `postMessage`)."* — and, on the `react()` integration: *"Required because
+  the visual editing overlay components (`SanityVisualEditing`,
+  `DisableDraftMode`) are React components that run in the browser."*
+- Read precisely, the browser-APIs sentence justifies the `client:only`
+  *directive* (why no SSR attempt); the React *requirement* is justified by
+  the second quote — which is circular ("React is required because the
+  components are React"). Neither claims browser APIs *necessitate* React,
+  because they can't: a plain Astro `<script>` is bundled by Vite and runs in
+  the browser with full access to `window`, cookies, and `postMessage`. The
+  `client:only="react"` is a *consequence* of choosing React (a component
+  touching `window` at render time can't SSR), not a cause.
 - The underlying `@sanity/visual-editing` package ships a framework-agnostic
   `enableVisualEditing()` entry point **and** a dedicated `./svelte` export
   (verified in the package's `exports` map).
@@ -191,7 +201,12 @@ issued cookie) are the controls. Blast radius if stolen: read access to
 drafts only — no writes, and the HMAC doesn't reverse to the token.
 Hardening: embed a signed expiry in the value; compare with
 `timingSafeEqual`. Production across domains: `sameSite: 'none', secure:
-true` (flagged in `enable.ts`).
+true` (env-driven in `src/lib/sanity.ts`), **plus the CHIPS `Partitioned`
+attribute when the enable route is hit from a cross-site iframe** — Safari
+drops unpartitioned third-party cookies, so without it draft mode never
+activates there (Chrome is more permissive, masking the bug). The disable
+route must expire both the partitioned and unpartitioned variants. Both
+routes handle this; the official Astro guide documents the same trap.
 
 ---
 

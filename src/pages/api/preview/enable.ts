@@ -28,7 +28,19 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
     return new Response('Invalid preview secret', { status: 401 })
   }
 
-  cookies.set(PREVIEW_COOKIE, await getPreviewCookieValue(), previewCookieOptions)
+  // Safari blocks third-party cookies that aren't partitioned. When the
+  // Presentation Tool loads this route inside a cross-site iframe (Studio and
+  // site on different domains, i.e. production), add the CHIPS Partitioned
+  // attribute so Safari stores the cookie under the Studio's partition.
+  // Top-level and same-site (localhost dev) requests stay unpartitioned.
+  const partitioned =
+    request.headers.get('sec-fetch-dest') === 'iframe' &&
+    request.headers.get('sec-fetch-site') === 'cross-site'
+
+  cookies.set(PREVIEW_COOKIE, await getPreviewCookieValue(), {
+    ...previewCookieOptions,
+    partitioned,
+  })
 
   return redirect(redirectTo, 307)
 }
