@@ -137,7 +137,11 @@ For a container platform (ECS, Cloud Run, GKE) swap the adapter to
 After deploying: add the production domain to the Sanity project's CORS
 origins, point the Studio's `presentationTool` `previewUrl.origin` at the
 deployed site, and don't edge-cache SSR HTML without varying on the
-`sanity-preview` cookie. (`npm run preview` doesn't apply to the Vercel
+`sanity-preview` cookie. Safari note: the preview cookie is set with the
+CHIPS `Partitioned` attribute when the enable route is hit from a cross-site
+iframe (Studio and site on different domains) — Safari drops unpartitioned
+third-party cookies, so without this, draft mode silently never activates
+there while working fine in Chrome. (`npm run preview` doesn't apply to the Vercel
 adapter — use `vercel dev` or plain `npm run dev` locally.)
 
 ## Content backup & seeding
